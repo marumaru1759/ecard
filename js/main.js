@@ -3,7 +3,7 @@ enchant ();
 
 window.onload = function () {
     var game = new Game(420,320);
-    game.preload('asset/penguin1.png','asset/cloud1.png');
+    game.preload('asset/Ecardomote.png','asset/Ecardemperor.png','asset/Ecardcitizen.png','asset/Ecardslave.png');
     game.fps = 30;
     
     game.onload = function(){
@@ -12,107 +12,169 @@ window.onload = function () {
     // game.assets['asset/hitsuji_nation.mp3'].play();
     var startscene = new Scene();
     
-    startscene.backgroundColor = "#4169e1";
+    startscene.backgroundColor = "#222222";
         // Title Logo
-        var titlelogo = new Label("Penguin Trip");
-        titlelogo.x = 100;
+        var titlelogo = new Label("E Card");
+        titlelogo.x = 150;
         titlelogo.y = 50;
         titlelogo.font = "36px palatino";
+        titlelogo.color = "#FF0000";
+
 
         var startmsg = new Label("Click screen to start game");
         startmsg.x = 100;
         startmsg.y = 120;
         startmsg.font = "20px palatino";
+        startmsg.color = "#FF0000";
 
         startscene.addChild(titlelogo);
         startscene.addChild(startmsg);
 
     game.pushScene(startscene);
 
-    // create first stage with nodes
+    // define each sprite character
     
     var firststage = new Scene();
-    var penguin = new Sprite(30,35);
-    var cloud1 = new Sprite(92,62);
-    var cloud2 = new Sprite(92,62);
-    var score = new Label();  
+    var resultscene = new Scene();
+
+    var ecardomote = new Array();
+        for ( i=0; i<5; i++){
+            ecardomote[i] = new Sprite(54,82);
+            ecardomote[i].image = game.assets['asset/Ecardomote.png'];
+        }
     
-    // describe auto horizontal scroll
-        cloud2.addEventListener('enterframe', function(){
-            this.x+=2 ;
-            if(cloud2.x >= 420){
-                this.x=-90;
-            }
-        })
-        cloud1.addEventListener('enterframe', function(){
-            this.x+=2 ;
-            if(cloud1.x >= 420){
-                this.x=-90;
-            }
+    var ecardemp = new Sprite(54,82);
+    ecardemp.image = game.assets['asset/Ecardemperor.png'];
 
-        })
+    var ecardciti = new Array();
+        for ( i=0; i<3; i++){
+            ecardciti[i] = new Sprite(54,82);
+            ecardciti[i].image = game.assets['asset/Ecardcitizen.png'];
+        }
+
+    var ecardsl = new Sprite(54,82);
+    ecardsl.image = game.assets['asset/Ecardslave.png'];
+
+    var mycard = "";
+
+    // how to manage cards
+        //select card
+        for ( i=0; i<3; i++){
+            ecardciti[i].addEventListener('touchstart', function(){
+                this.tl.moveTo(350,150,40);
+
+                mycard = "Citizen"; 
+                enemy.dispatchEvent(new Event('cardselection'));
 
 
-    // how to control penguin
-        //penguin is stepping
-        penguin.addEventListener('enterframe',function(){
-            this.frame++;
-            if(this.frame > 3){
-                this.frame = 0;
-            }
-        })
-
-        penguin.addEventListener('enterframe',function(){
-            if(game.input.up){
-                    this.y--;
-           }
-           if(game.input.down){
-                    this.y++;
-                
-            }
-        })
-
-    // define behavior of sloth crashing 
+            })
+        }  
         
+        ecardemp.addEventListener('touchstart', function(){
+            this.tl.moveTo(350,150,40);
 
-    //define behavior when sloth gets a banana
+            mycard = "Emperor";
+            enemy.dispatchEvent(new Event('cardselection'));
+        })
         
+        ecardsl.addEventListener('touchstart', function(){
+            this.tl.moveTo(350,150,40);
+
+            mycard = "Slave";
+            enemy.dispatchEvent(new Event('cardselection'));
+       })
+
+        //enemy choose the card
+
+            var enemy = new Label();
+
+            enemy.score = 0;
+            enemy.card  = "";
+            enemy.x = 350; enemy.y = 50;
+
+            enemy.addEventListener('cardselection',function(){
+               this.score = Math.floor(Math.random() * 5);
+
+               if(this.score == 0){
+                    this.card = "Emperor";
+                    this.text = this.card + " " + this.score;
+
+               }    else if (this.score == 1){
+                    this.card = "Slave";
+                    this.text = this.card + " " + this.score;
+               } else{
+                    this.card = "Citizen";
+                    this.text = this.card + " " + this.score;
+               }
+              
+               firststage.addChild(this);
+               cardJudge(mycard, enemy.card);
+               
+            })      
 
     // transferred from title to first stage
     startscene.addEventListener('touchstart',function(){       
         game.replaceScene(firststage);
 
-        firststage.backgroundColor = "#99CCFF";
+        firststage.backgroundColor = "#009900";
 
+        // display Ecard (enemy)
         
-        // display penguin (player)
+        for( i=0; i<5; i++){
+           ecardomote[i].x = 60 * i + 40; ecardomote[i].y=90; 
+           ecardomote[i].scaleY = -1;
+           firststage.addChild(ecardomote[i]);
+        }
         
-        penguin.image = game.assets['asset/penguin1.png'];
-        penguin.x = 20; penguin.y=230;
-        firststage.addChild(penguin);
+        // display Ecard (player)
+        
+        ecardemp.x = 40; ecardemp.y=190;
+        firststage.addChild(ecardemp);
 
-        // display cloud
+        for( i=0; i<3; i++) {
+            ecardciti[i].x = 60 * i +100; ecardciti[i].y=190;
+            firststage.addChild(ecardciti[i]);
+        }
 
-        cloud1.image = game.assets['asset/cloud1.png'];
-        cloud1.x = 80; cloud1.y=80;
-        firststage.addChild(cloud1);
+        ecardsl.x = 280; ecardsl.y=190;
+        firststage.addChild(ecardsl);
 
-        cloud2.image = game.assets['asset/cloud1.png'];
-        cloud2.x = 230; cloud2.y=80;
-        firststage.addChild(cloud2);
-
-        //display score upper-right on the first stage
-
-        game.score = 0;
-
-        score.x = 350;
-        score.y = 15;
-        score.text = "score: " + game.score;
-        firststage.addChild(score);
+        var startcard = new Label("Please select card");
+        startcard.x = 50; 
+        startcard.y = 300;
+        firststage.addChild(startcard);
 
         //stop prologue thema song
-    });   
+    }); 
 
+    // Transferred to result scene 
+
+    var cardJudge = function(me, enemy){
+        if(me == enemy){
+        console.log("draw")
+    }else if(me == "Emperor"){
+        if(enemy == "Slave"){
+            console.log("lose");
+        }else if(enemy == "Citizen"){
+            console.log("win");
+        }
+    } else if(me == "Citizen"){
+        if(enemy == "Emperor"){
+            console.log("lose");
+        } else if(enemy  == "Slave"){
+            console.log("win");
+        } 
+    } else if(me == "Citizen"){
+        if(enemy  == "Emperor"){
+            console.log("lose");
+        } else if(emeny == "Slave") {
+            console.log("win");
+        }
+    }
+
+
+    }
+    
 
 };
 
