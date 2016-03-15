@@ -66,7 +66,6 @@ window.onload = function () {
                 mycard = "Citizen"; 
                 enemy.dispatchEvent(new Event('cardselection'));
 
-
             })
         }  
         
@@ -164,11 +163,11 @@ window.onload = function () {
         } else if(enemy  == "Slave"){
             console.log("win");
         } 
-    } else if(me == "Citizen"){
+    } else if(me == "Slave"){
         if(enemy  == "Emperor"){
-            console.log("lose");
-        } else if(emeny == "Slave") {
             console.log("win");
+        } else if(enemy == "Citizen") {
+            console.log("lose");
         }
     }
 
