@@ -4,6 +4,7 @@ enchant ();
 window.onload = function () {
     var game = new Game(420,320);
     game.preload('asset/Ecardomote.png','asset/Ecardemperor.png','asset/Ecardcitizen.png','asset/Ecardslave.png');
+    game.preload('asset/kaiji.jpg','asset/tonegawa.jpg');
     game.fps = 30;
     
     game.onload = function(){
@@ -11,7 +12,7 @@ window.onload = function () {
     // create start menu & play start music
     // game.assets['asset/hitsuji_nation.mp3'].play();
     var startscene = new Scene();
-    
+
     startscene.backgroundColor = "#222222";
         // Title Logo
         var titlelogo = new Label("E Card");
@@ -32,152 +33,248 @@ window.onload = function () {
 
     game.pushScene(startscene);
 
-    // define each sprite character
+           
+         // define each sprite character
     
-    var firststage = new Scene();
-    var resultscene = new Scene();
-
-    var ecardomote = new Array();
-        for ( i=0; i<5; i++){
-            ecardomote[i] = new Sprite(54,82);
-            ecardomote[i].image = game.assets['asset/Ecardomote.png'];
-        }
+        var ecardomote = new Sprite(54,82);
+            ecardomote.image = game.assets['asset/Ecardomote.png'];
+            ecardomote.scaleX = -1; ecardomote.scaleY = -1;
     
-    var ecardemp = new Sprite(54,82);
-    ecardemp.image = game.assets['asset/Ecardemperor.png'];
+        var ecardemp = new Sprite(54,82);
+            ecardemp.image = game.assets['asset/Ecardemperor.png'];
+            ecardemp.card = "Emperor";
 
-    var ecardciti = new Array();
-        for ( i=0; i<3; i++){
-            ecardciti[i] = new Sprite(54,82);
-            ecardciti[i].image = game.assets['asset/Ecardcitizen.png'];
-        }
+        var ecardciti = new Array();
+            for ( i=0; i<3; i++){
+                ecardciti[i] = new Sprite(54,82);
+                ecardciti[i].image = game.assets['asset/Ecardcitizen.png'];
+                ecardciti[i].card = "Citizen";
+            }
 
-    var ecardsl = new Sprite(54,82);
-    ecardsl.image = game.assets['asset/Ecardslave.png'];
+        var ecardsl = new Sprite(54,82);
+            ecardsl.image = game.assets['asset/Ecardslave.png'];
+            ecardsl.card = "Slave";
 
-    var mycard = "";
-
-    // how to manage cards
-        //select card
-        for ( i=0; i<3; i++){
-            ecardciti[i].addEventListener('touchstart', function(){
-                this.tl.moveTo(350,150,40);
-
-                mycard = "Citizen"; 
-                enemy.dispatchEvent(new Event('cardselection'));
-
-            })
-        }  
-        
-        ecardemp.addEventListener('touchstart', function(){
-            this.tl.moveTo(350,150,40);
-
-            mycard = "Emperor";
-            enemy.dispatchEvent(new Event('cardselection'));
-        })
-        
-        ecardsl.addEventListener('touchstart', function(){
-            this.tl.moveTo(350,150,40);
-
-            mycard = "Slave";
-            enemy.dispatchEvent(new Event('cardselection'));
-       })
-
-        //enemy choose the card
-
-            var enemy = new Label();
-
-            enemy.score = 0;
-            enemy.card  = "";
-            enemy.x = 350; enemy.y = 50;
-
-            enemy.addEventListener('cardselection',function(){
-               this.score = Math.floor(Math.random() * 5);
-
-               if(this.score == 0){
-                    this.card = "Emperor";
-                    this.text = this.card + " " + this.score;
-
-               }    else if (this.score == 1){
-                    this.card = "Slave";
-                    this.text = this.card + " " + this.score;
-               } else{
-                    this.card = "Citizen";
-                    this.text = this.card + " " + this.score;
-               }
-              
-               firststage.addChild(this);
-               cardJudge(mycard, enemy.card);
-               
-            })      
+        var enemy = new Label();
+        var mycard ="";
 
     // transferred from title to first stage
-    startscene.addEventListener('touchstart',function(){       
-        game.replaceScene(firststage);
+        var firststage = new Scene();
 
-        firststage.backgroundColor = "#009900";
+        startscene.addEventListener('touchstart',function(){       
+            game.replaceScene(firststage);
+            firststage.backgroundColor = "#009900";
 
-        // display Ecard (enemy)
+       // display Ecard (player)
         
-        for( i=0; i<5; i++){
-           ecardomote[i].x = 60 * i + 40; ecardomote[i].y=90; 
-           ecardomote[i].scaleY = -1;
-           firststage.addChild(ecardomote[i]);
-        }
-        
-        // display Ecard (player)
-        
-        ecardemp.x = 40; ecardemp.y=190;
+        ecardemp.x = 70; ecardemp.y=210;
         firststage.addChild(ecardemp);
 
         for( i=0; i<3; i++) {
-            ecardciti[i].x = 60 * i +100; ecardciti[i].y=190;
+            ecardciti[i].x = 60 * i +130; ecardciti[i].y=210;
             firststage.addChild(ecardciti[i]);
         }
 
-        ecardsl.x = 280; ecardsl.y=190;
+        ecardsl.x = 310; ecardsl.y=210;
         firststage.addChild(ecardsl);
 
-        var startcard = new Label("Please select card");
-        startcard.x = 50; 
-        startcard.y = 300;
-        firststage.addChild(startcard);
+        var startgame = new Label("Please select a card");
+        startgame.x = 50; 
+        startgame.y = 300;
+        firststage.addChild(startgame);
 
         //stop prologue thema song
-    }); 
 
-    // Transferred to result scene 
+        // how to manage cards   
+         //select card
+        for ( i=0; i<3; i++){
+            ecardciti[i].addEventListener('touchstart', function(){
+                enemyPick();
+                cardPick(this);
+                this.removeEventListener('touchstart', arguments.callee);
 
-    var cardJudge = function(me, enemy){
+        });
+        }  
+        
+        ecardemp.addEventListener('touchstart', function(){
+            enemyPick();
+            cardPick(this);
+            this.removeEventListener('touchstart', arguments.callee);
+        });
+         
+        ecardsl.addEventListener('touchstart', function(){
+            enemyPick();
+            cardPick(this);
+            this.removeEventListener('touchstart', arguments.callee);
+        });
+                                        
+    });    
+
+
+    // pick up a random card (which card enemy will chose)
+
+    function enemyPick() {
+            
+            enemy.score = Math.floor(Math.random() * 5);
+            
+            if(enemy.score == 0){
+                    enemy.card = "Emperor";
+                    enemy.text = enemy.card + " " + enemy.score;
+
+               }    else if (enemy.score == 1){
+                    enemy.card = "Slave";
+                    enemy.text = enemy.card + " " + enemy.score;
+               } else{
+                    enemy.card = "Citizen";
+                    enemy.text = enemy.card + " " + enemy.score;
+               }
+
+            enemy.x = 350; enemy.y = 50;
+            
+            firststage.addChild(enemy);
+
+    }
+
+
+    // pick up card function
+
+    function cardPick(c) {
+                firststage.addChild(ecardomote);
+                ecardomote.tl.moveTo(100,90,40);
+                c.tl.moveTo(210,90,40).then(function(){
+                    mycard = c.card;
+                }).delay(50).then(function(){
+                    cardOpen(c);
+                });
+                c.image = game.assets['asset/Ecardomote.png'];
+
+        
+        }
+
+
+    // open card function
+
+    function cardOpen(c){
+            if(enemy.card == "Emperor") {
+                ecardomote.image = game.assets['asset/Ecardemperor.png'];
+            }else if(enemy.card == "Citizen") {
+                ecardomote.image = game.assets['asset/Ecardcitizen.png'];
+            }else{
+                ecardomote.image = game.assets['asset/Ecardslave.png'];
+            } if ( mycard == "Emperor") {
+                c.image = game.assets['asset/Ecardemperor.png'];
+            } else if (mycard == "Citizen"){
+                 c.image = game.assets['asset/Ecardcitizen.png'];
+            }else {
+                 c.image = game.assets['asset/Ecardslave.png'];
+            }
+
+            setTimeout(function(){
+                cardJudge(mycard, enemy.card);
+            },5000);
+
+
+    }
+
+   // card judge function
+
+    function cardJudge(me, enemy){
+        var judge ="";
+
+
         if(me == enemy){
         console.log("draw")
     }else if(me == "Emperor"){
         if(enemy == "Slave"){
-            console.log("lose");
+            judge = "lose";
+            console.log(judge);
+            winningResult(judge);
         }else if(enemy == "Citizen"){
-            console.log("win");
+            judge = "win";
+            console.log(judge);
+            winningResult(judge);
         }
     } else if(me == "Citizen"){
         if(enemy == "Emperor"){
-            console.log("lose");
+            judge ="lose";
+            console.log(judge);
+            winningResult(judge);
         } else if(enemy  == "Slave"){
-            console.log("win");
+            judge = "win";
+            console.log(judge);
+            winningResult(judge);
         } 
     } else if(me == "Slave"){
         if(enemy  == "Emperor"){
-            console.log("win");
+            judge = "win";
+            console.log(judge);
+            winningResult(judge);
         } else if(enemy == "Citizen") {
-            console.log("lose");
+            judge = "lose";
+            console.log(judge);
+            winningResult(judge);
         }
     }
 
 
     }
+
+
+    // Define the scene after card selection 
     
+    var winstage = new Scene();
+        winstage.backgroundColor = "#222222";
+        
+        var winner = new Sprite(250,150);
+        winner.image = game.assets['asset/kaiji.jpg'];
+        winner.x = 85; winner.y = 50;
+        
+        var winmsg = new Label();
+        winmsg.text = "俺の勝ちだ、利根川！";
+        winmsg.font = "26px meiryo";
+        winmsg.color = "white";
+        winmsg.x = 90; winmsg.y = 250;
+
+        winstage.addChild(winner);
+        winstage.addChild(winmsg);
+
+        function winningResult(e){
+
+            if( e == "win") {
+                game.replaceScene(winstage);                
+            } else if ( e == "lose" ){
+                game.replaceScene(losestage);
+            }
+
+            setTimeout(function(){
+                    game.onload();
+                }, 5000);
+        
+        }
+
+        
+    var losestage = new Scene();
+        losestage.backgroundColor = "#222222";
+        
+        var loser = new Sprite(250,150);
+        loser.image = game.assets['asset/tonegawa.jpg'];
+        loser.x = 85; loser.y = 50;
+        
+        var losemsg = new Label();
+        losemsg.text = "カイジくん、君の負けだ！";
+        losemsg.font = "26px meiryo";
+        losemsg.color = "white";
+        losemsg.x = 70; losemsg.y = 250;
+
+        losestage.addChild(loser);
+        losestage.addChild(losemsg);
+
+    var drawstage = new Scene();
+
+        
 
 };
 
 game.start();
-
 
 }
