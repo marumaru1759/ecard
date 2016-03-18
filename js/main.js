@@ -37,8 +37,8 @@ window.onload = function () {
          // define each sprite character
     
         var ecardomote = new Sprite(54,82);
-            ecardomote.image = game.assets['asset/Ecardomote.png'];
-            ecardomote.scaleX = -1; ecardomote.scaleY = -1;
+        //   ecardomote.image = game.assets['asset/Ecardomote.png'];
+        //   ecardomote.scaleX = -1; ecardomote.scaleY = -1;
     
         var ecardemp = new Sprite(54,82);
             ecardemp.image = game.assets['asset/Ecardemperor.png'];
@@ -56,6 +56,29 @@ window.onload = function () {
             ecardsl.card = "Slave";
 
         var enemy = new Label();
+        var onplay = true;
+        //Initial message
+
+        var startgame = new Label("Please select a card");
+        startgame.x = 110; 
+        startgame.y = 290;
+        startgame.font ="20px meiryo";
+        startgame.color = "white";
+
+        //Enemy algorism (how enemy chose a card)
+
+        var enemyturn = 0;
+        var ealgo = [0,1,2,3,4];
+        
+        for ( j =0; j < 20; j++){
+            i = Math.floor(Math.random() * 5);
+            t = ealgo [4];
+            ealgo[4] = ealgo [i];
+            ealgo[i] = t;
+            console.log("i= " + i + "  " + ealgo);
+        }
+        
+        //mycard
         var mycard ="";
 
     // transferred from title to first stage
@@ -64,6 +87,7 @@ window.onload = function () {
         startscene.addEventListener('touchstart',function(){       
             game.replaceScene(firststage);
             firststage.backgroundColor = "#009900";
+            
 
        // display Ecard (player)
         
@@ -78,9 +102,8 @@ window.onload = function () {
         ecardsl.x = 310; ecardsl.y=210;
         firststage.addChild(ecardsl);
 
-        var startgame = new Label("Please select a card");
-        startgame.x = 50; 
-        startgame.y = 300;
+        // display start msg
+
         firststage.addChild(startgame);
 
         //stop prologue thema song
@@ -89,23 +112,32 @@ window.onload = function () {
          //select card
         for ( i=0; i<3; i++){
             ecardciti[i].addEventListener('touchstart', function(){
-                enemyPick();
-                cardPick(this);
-                this.removeEventListener('touchstart', arguments.callee);
 
+                if(onplay){
+                    onplay = false;
+                    firststage.removeChild(startgame);
+                    enemyPick();
+                    cardPick(this);
+                } 
         });
         }  
         
         ecardemp.addEventListener('touchstart', function(){
-            enemyPick();
-            cardPick(this);
-            this.removeEventListener('touchstart', arguments.callee);
+            if(onplay){
+                onplay = false;
+                firststage.removeChild(startgame);
+                enemyPick();
+                cardPick(this);
+            } 
         });
          
         ecardsl.addEventListener('touchstart', function(){
-            enemyPick();
-            cardPick(this);
-            this.removeEventListener('touchstart', arguments.callee);
+            if(onplay){
+                onplay = false;
+                firststage.removeChild(startgame);
+                enemyPick();
+                cardPick(this);
+            }             
         });
                                         
     });    
@@ -114,8 +146,9 @@ window.onload = function () {
     // pick up a random card (which card enemy will chose)
 
     function enemyPick() {
+    
+            enemy.score = ealgo[enemyturn];
             
-            enemy.score = Math.floor(Math.random() * 5);
             
             if(enemy.score == 0){
                     enemy.card = "Emperor";
@@ -139,8 +172,13 @@ window.onload = function () {
     // pick up card function
 
     function cardPick(c) {
+                ecardomote.image = game.assets['asset/Ecardomote.png'];
+                ecardomote.scaleX = -1; ecardomote.scaleY = -1;
+                ecardomote.x = 0; ecardomote.y = 0;
+    
                 firststage.addChild(ecardomote);
-                ecardomote.tl.moveTo(100,90,40);
+                ecardomote.tl.fadeIn(10).moveTo(100,90,40);
+                
                 c.tl.moveTo(210,90,40).then(function(){
                     mycard = c.card;
                 }).delay(50).then(function(){
@@ -170,7 +208,7 @@ window.onload = function () {
             }
 
             setTimeout(function(){
-                cardJudge(mycard, enemy.card);
+                cardJudge(mycard, enemy.card, c);
             },5000);
 
 
@@ -178,12 +216,18 @@ window.onload = function () {
 
    // card judge function
 
-    function cardJudge(me, enemy){
+    function cardJudge(me, enemy, mycard){
         var judge ="";
 
 
         if(me == enemy){
-        console.log("draw")
+        console.log("draw");
+        if(enemyturn == 4){
+            judge = "draw";
+            winningResult(judge);
+        }else{
+            clearTable(mycard);        
+        }            
     }else if(me == "Emperor"){
         if(enemy == "Slave"){
             judge = "lose";
@@ -216,7 +260,15 @@ window.onload = function () {
         }
     }
 
+    }
 
+    function clearTable(c){
+        ecardomote.tl.fadeOut(30);
+        c.tl.fadeOut(30);
+        enemyturn++;
+        firststage.addChild(startgame);
+        //c.clearEventListener("enterframe");
+        onplay = true;
     }
 
 
@@ -237,22 +289,7 @@ window.onload = function () {
 
         winstage.addChild(winner);
         winstage.addChild(winmsg);
-
-        function winningResult(e){
-
-            if( e == "win") {
-                game.replaceScene(winstage);                
-            } else if ( e == "lose" ){
-                game.replaceScene(losestage);
-            }
-
-            setTimeout(function(){
-                    game.onload();
-                }, 5000);
-        
-        }
-
-        
+       
     var losestage = new Scene();
         losestage.backgroundColor = "#222222";
         
@@ -270,6 +307,37 @@ window.onload = function () {
         losestage.addChild(losemsg);
 
     var drawstage = new Scene();
+        drawstage.backgroundColor = "#222222";
+
+        var drawer = new Sprite(250,150);
+        drawer.image = game.assets['asset/kaiji.jpg'];
+        drawer.x = 85; drawer.y = 50;
+
+        var drawmsg = new Label();
+        drawmsg.text = "引き分けかっっ。。。";
+        drawmsg.font = "26px meiryo";
+        drawmsg.color = "white";
+        drawmsg.x = 70; drawmsg.y = 250;
+
+        drawstage.addChild(drawer);
+        drawstage.addChild(drawmsg);
+
+
+    function winningResult(e){
+
+            if( e == "win") {
+                game.replaceScene(winstage);                
+            } else if ( e == "lose" ){
+                game.replaceScene(losestage);
+            } else {
+                game.replaceScene(drawstage);
+            }
+
+            setTimeout(function(){
+                    game.onload();
+                }, 3000);
+        
+        }
 
         
 
