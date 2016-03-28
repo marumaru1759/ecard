@@ -16,20 +16,30 @@ window.onload = function () {
     startscene.backgroundColor = "#222222";
         // Title Logo
         var titlelogo = new Label("E Card");
-        titlelogo.x = 150;
+        titlelogo.x = 135;
         titlelogo.y = 50;
-        titlelogo.font = "36px palatino";
+        titlelogo.font = "36px meiryo";
         titlelogo.color = "#FF0000";
+
+        var titlebox = new Sprite(360,160);
+        var surface = new Surface(420,320);
+        titlebox.image = surface;
+        
+        var context = surface.context;
+        context.fillStyle = "#808000";
+        context.fillRect( 30, 30, 360, 160);
 
 
         var startmsg = new Label("Click screen to start game");
-        startmsg.x = 100;
-        startmsg.y = 120;
-        startmsg.font = "20px palatino";
+        startmsg.x = 70;
+        startmsg.y = 180;
+        startmsg.font = "20px meiryo";
         startmsg.color = "#FF0000";
 
+        startscene.addChild(titlebox);
         startscene.addChild(titlelogo);
         startscene.addChild(startmsg);
+
 
     game.pushScene(startscene);
 
@@ -56,7 +66,10 @@ window.onload = function () {
             ecardsl.card = "Slave";
 
         var enemy = new Label();
+
+        // If "onplay" is true, a player can select a card.
         var onplay = true;
+        
         //Initial message
 
         var startgame = new Label("Please select a card");
@@ -78,8 +91,10 @@ window.onload = function () {
             console.log("i= " + i + "  " + ealgo);
         }
         
-        //mycard
+        //mycard status
         var mycard ="";
+        var emperorpick = 0;
+        var slavepick = 0;
 
     // transferred from title to first stage
         var firststage = new Scene();
@@ -125,6 +140,7 @@ window.onload = function () {
         ecardemp.addEventListener('touchstart', function(){
             if(onplay){
                 onplay = false;
+                emperorpick = 1;
                 firststage.removeChild(startgame);
                 enemyPick();
                 cardPick(this);
@@ -134,6 +150,7 @@ window.onload = function () {
         ecardsl.addEventListener('touchstart', function(){
             if(onplay){
                 onplay = false;
+                slavepick = 1;
                 firststage.removeChild(startgame);
                 enemyPick();
                 cardPick(this);
@@ -143,35 +160,26 @@ window.onload = function () {
     });    
 
 
-    // pick up a random card (which card enemy will chose)
+    // An Enemy picks up a random card
 
     function enemyPick() {
     
             enemy.score = ealgo[enemyturn];
-            
-            
+                    
             if(enemy.score == 0){
                     enemy.card = "Emperor";
-                    enemy.text = enemy.card + " " + enemy.score;
-
                }    else if (enemy.score == 1){
                     enemy.card = "Slave";
-                    enemy.text = enemy.card + " " + enemy.score;
                } else{
                     enemy.card = "Citizen";
-                    enemy.text = enemy.card + " " + enemy.score;
                }
-
-            enemy.x = 350; enemy.y = 50;
-            
-            firststage.addChild(enemy);
-
     }
 
 
-    // pick up card function
+    // Both an enemy and a player submit their cards which they have selected 
 
     function cardPick(c) {
+                //  An enemy submits a card.
                 ecardomote.image = game.assets['asset/Ecardomote.png'];
                 ecardomote.scaleX = -1; ecardomote.scaleY = -1;
                 ecardomote.x = 0; ecardomote.y = 0;
@@ -179,6 +187,7 @@ window.onload = function () {
                 firststage.addChild(ecardomote);
                 ecardomote.tl.fadeIn(10).moveTo(100,90,40);
                 
+                //  A player submits a card. 
                 c.tl.moveTo(210,90,40).then(function(){
                     mycard = c.card;
                 }).delay(50).then(function(){
@@ -190,7 +199,7 @@ window.onload = function () {
         }
 
 
-    // open card function
+    // Both an enemy and a player open their cards
 
     function cardOpen(c){
             if(enemy.card == "Emperor") {
@@ -209,12 +218,12 @@ window.onload = function () {
 
             setTimeout(function(){
                 cardJudge(mycard, enemy.card, c);
-            },5000);
+            },3000);
 
 
     }
 
-   // card judge function
+   // Judging algorithm
 
     function cardJudge(me, enemy, mycard){
         var judge ="";
@@ -222,7 +231,10 @@ window.onload = function () {
 
         if(me == enemy){
         console.log("draw");
-        if(enemyturn == 4){
+        if(enemyturn == 3){
+            judge = "draw";
+            winningResult(judge);
+        }else if(emperorpick == 1 && slavepick ==1){
             judge = "draw";
             winningResult(judge);
         }else{
@@ -262,12 +274,14 @@ window.onload = function () {
 
     }
 
+    // After match, cards are cleared from the table.
+
     function clearTable(c){
         ecardomote.tl.fadeOut(30);
         c.tl.fadeOut(30);
+        c.clearEventListener("touchstart");
         enemyturn++;
         firststage.addChild(startgame);
-        //c.clearEventListener("enterframe");
         onplay = true;
     }
 
